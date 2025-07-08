@@ -127,4 +127,4 @@ Upload `.uf2` to the RP2040 using drag-and-drop bootloader or `picotool`.
 ## 👤 Author
 
 Designed by [Devaansh Pathak](https://github.com/devaanshpathak)
-Project Repo: [github.com/devaansh-pathak/duckyfence](https://github.com/devaanshpathak/duckyfence)
+Project Repo: [github.com/devaanshpathak/duckyfence](https://github.com/devaanshpathak/duckyfence)
