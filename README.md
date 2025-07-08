@@ -1,117 +1,104 @@
 # 🛡️ DuckyFence — RP2040-Based BadUSB Defense Board
 
-**DuckyFence** is a custom RP2040-based development board designed to detect and log malicious USB devices (like BadUSB HID injectors). It acts as a hardware-level USB inspection layer, forwarding suspicious device data via UART for analysis using an Arduino + USB Host Shield or a PC. This project is built for hardware security researchers, makers, and defenders.
+**DuckyFence** is a custom RP2040-based board built to detect and log suspicious USB devices — especially ones that act like keyboards (HID injectors), like the infamous BadUSB. It works as a hardware-level USB inspection tool. Connect it to an Arduino + USB Host Shield (or a serial adapter), and it’ll help you spot and track rogue USB activity in real time.
 
 ---
 
 ## 🔧 Features
 
-- RP2040 (QFN-56) MCU with 16MB W25Q128JV QSPI Flash
-- USB-A port for connecting suspicious USB devices
-- USB-C port for power input and UART communication
-- AMS1117-3.3V voltage regulator (powered from USB-C)
-- UART header for connecting to Arduino or USB-Serial adapter
-- GPIO breakout (GPIO2–9) for future expansion
-- SWD header for debugging (SWCLK, SWDIO)
-- BOOTSEL and RUN buttons
-- Clean silkscreen with labeled headers and structured layout
+- RP2040 (QFN-56) with 16MB QSPI Flash (W25Q128JV)
+- USB-A port to plug in suspect devices
+- USB-C port for 5V power and UART out
+- AMS1117-3.3V voltage regulator (USB-powered)
+- UART header for Arduino or USB-to-Serial adapter
+- GPIO breakout (GPIO2–9) for extensions
+- SWD debug header (SWCLK + SWDIO)
+- BOOTSEL jumper and RUN button
+- Clean silkscreen and compact layout
 
 ---
 
 ## 🧱 Architecture
 
 ```plaintext
-[ USB-A ] ← Suspicious USB device
+[ USB-A ] ← Suspect USB Device
      ↓
-[ RP2040 ] → Logs descriptor/traffic
+[ RP2040 ] → Forwards device info
      ↓
-[ UART TX/RX ] → Arduino Uno via USB Host Shield
+[ UART TX/RX ] → Arduino Uno (USB Host Shield)
      ↓
-[ Python script or Serial Logger on PC ]
+[ Serial Monitor or Python Parser on PC ]
 ````
 
 ---
 
-## 📦 Bill of Materials
+## 📦 BOM (Bill of Materials)
 
-### 🖥️ PCB BOM (LCSC Components)
+### 🖥️ PCB Parts (LCSC)
 
 * See [`BOM_PCB.xlsx`](./BOM_PCB.xlsx)
-* Includes: RP2040 (`C2040`), Flash (`C84677`), AMS1117 (`C347222`), capacitors, resistors, USB ports, buttons, headers
+* Includes: RP2040 (`C2040`), W25Q128JV Flash (`C84677`), AMS1117 (`C347222`), USB ports, passives, headers, buttons
 
-### 🧰 Additional Hardware (Amazon)
+### 🧰 Extra Hardware (Amazon)
 
 See [`BOM_AMAZON.xlsx`](./BOM_AMAZON.xlsx)
 
-| Item                                  | Qty   | Notes                               |
-| ------------------------------------- | ----- | ----------------------------------- |
-| Arduino Uno                           | 1     | Used as USB host + UART logger      |
-| USB Host Shield                       | 1     | Needed to interface with USB-A port |
-| USB-to-Serial Adapter | 1     | Optional — direct UART to PC        |
-| USB-C 5V adapter                      | 1     | To power the board                  |
-| Jumper wires                          | 1 set | Connect UART, GPIOs, or Arduino     |
-| USB-A male cable                      | 1     | Connect BadUSB devices              |
-| Breadboard (optional)                 | 1     | For prototyping GPIO uses           |
+| Item                  | Qty | Use                                |
+| --------------------- | --- | ---------------------------------- |
+| Arduino Uno           | 1   | Logs USB data via USB Host Shield  |
+| USB Host Shield       | 1   | Lets Arduino read devices on USB-A |
+| USB-to-Serial Adapter | 1   | Optional – direct UART to PC       |
+| USB-C Power Adapter   | 1   | Powers the board                   |
+| Jumper Wires          | 1   | For UART or GPIOs                  |
+| USB-A Cable           | 1   | Connects BadUSB devices            |
+| Breadboard (optional) | 1   | For testing GPIO breakouts         |
 
 ---
 
-## 💻 Software Stack
+## 💻 Software Setup
 
-| Platform                        | Use                                                  |
-| ------------------------------- | ---------------------------------------------------- |
-| **Arduino IDE**                 | Program Uno for USB descriptor reading               |
-| **USB Host Shield Library 2.0** | Interact with USB devices                            |
-| **Python + pyserial**           | Optional UART log parsing                            |
-| **USBPcap (Optional)**          | Full USB traffic sniffing from PC side               |
-| **RP2040 Firmware**             | Add TinyUSB or custom USB handlers (to be developed) |
-
----
-
-## 🔌 Pinout Reference
-
-| Function      | RP2040 Pin             | GPIO                                 | Notes                       |
-| ------------- | ---------------------- | ------------------------------------ | --------------------------- |
-| USB DP/DM     | Pins 34/33             | —                                    | Connected to USB-A          |
-| UART TX/RX    | GPIO0/GPIO1            | TX → Header Pin 4, RX ← Header Pin 3 |                             |
-| SWD           | Pins 24/25             | —                                    | SWDIO / SWCLK               |
-| RUN           | Pin 30                 | —                                    | Reset pin                   |
-| BOOTSEL       | Via GPIO + 1k + header |                                      |                             |
-| GPIO Breakout | Pins 4–12              | GPIO2–9                              | 1×10 header with 3.3V + GND |
+| Tool/Platform           | Use                            |
+| ----------------------- | ------------------------------ |
+| Arduino IDE             | Program Arduino Uno            |
+| USB Host Shield Library | USB device detection (Arduino) |
+| Python + pyserial       | Optional: read UART on PC      |
+| USBPcap (Optional)      | Log USB traffic from PC        |
+| Pico SDK (CMake)        | Build firmware for RP2040      |
 
 ---
 
-## 📑 Devlog
+## 🔌 Pinout (Important Pins)
 
-See [`DEVLOG.md`](./DEVLOG.md)
+| Function      | RP2040 Pin    | GPIO    | Notes                       |
+| ------------- | ------------- | ------- | --------------------------- |
+| USB D+/D−     | Pins 34 / 33  | —       | Connected to USB-A          |
+| UART TX/RX    | GPIO0 / GPIO1 | TX/RX   | UART header → Arduino / PC  |
+| SWD Debug     | Pins 24 / 25  | —       | For SWCLK and SWDIO         |
+| RUN           | Pin 30        | —       | Reset pin                   |
+| BOOTSEL       | Header + 1kΩ  | —       | For programming             |
+| GPIO Breakout | Pins 4–12     | GPIO2–9 | On a 1×10 header with power |
 
----
-
-## 📸 Preview
-![Top View](https://hc-cdn.hel1.your-objectstorage.com/s/v3/92b4674ab81d90fcc6c0f7a240fd5c8e7d33c3d9_image.png)
-![Side View](https://hc-cdn.hel1.your-objectstorage.com/s/v3/513496f467b40c6f818115a2d973a3af67951d1e_image.png)
-![Bottom View](https://hc-cdn.hel1.your-objectstorage.com/s/v3/fce8cc3f3c91b013d8dc43dced6fc8b10b9459c3_image.png)
 ---
 
 ## 🔧 Firmware
 
-The `firmware/` folder contains all basic test and logging programs for the DuckyFence RP2040 board.
+The [`firmware/`](./firmware) folder includes all core test programs and UART loggers for the RP2040.
 
-### Included Programs
+### What’s Inside
 
-| File                    | Description                                                           |
-| ----------------------- | --------------------------------------------------------------------- |
-| `blink.c`               | Blinks onboard LED (GPIO25) to verify power and boot                  |
-| `uart_logger.c`         | Sends log messages via UART (GPIO0 TX → Arduino/PC)                   |
-| `arduino_uart_logger.c` | Listens on UART for USB device logs sent by an Arduino Uno            |
-| `usb_detect.c`          | Initializes TinyUSB (device mode); logs connection status via USB CDC |
+| File                    | What it Does                                        |
+| ----------------------- | --------------------------------------------------- |
+| `blink.c`               | Blinks onboard LED to confirm boot                  |
+| `uart_logger.c`         | Sends log messages over UART                        |
+| `arduino_uart_logger.c` | Listens for logs from Arduino (USB device info)     |
+| `usb_detect.c`          | Uses TinyUSB to detect host connection via USB CDC  |
+| `usb_filter.c`          | Flags known malicious VID/PIDs, triggers GPIO alert |
+| `usb_passthrough.c`     | Forwards UART to PC via USB CDC (serial bridge)     |
+| `gpio_pulse.c`          | Pulses a GPIO on every USB device detection         |
 
-### Requirements
+### How to Build
 
-* [Pico SDK](https://github.com/raspberrypi/pico-sdk) (CMake project)
-* UART logs viewable via Arduino Serial Monitor or terminal
-* Optional: USB-to-Serial adapter or Arduino Uno connected to UART header
-
-### Build Instructions
+Make sure you have the [Pico SDK](https://github.com/raspberrypi/pico-sdk) set up:
 
 ```bash
 git submodule update --init
@@ -120,11 +107,45 @@ cmake ..
 make
 ```
 
-Upload `.uf2` to the RP2040 using drag-and-drop bootloader or `picotool`.
+You’ll get `.uf2` files in `build/` which can be dragged to the RP2040 USB drive.
 
 ---
 
-## 👤 Author
+## 🔌 Arduino Code
 
-Designed by [Devaansh Pathak](https://github.com/devaanshpathak)
-Project Repo: [github.com/devaanshpathak/duckyfence](https://github.com/devaanshpathak/duckyfence)
+All Arduino sketches are in [`arduino/`](./arduino). These run on the Uno + USB Host Shield and include:
+
+* `usb_sniffer.ino` – Basic VID/PID logger
+* `usb_forward_uart.ino` – Forwards USB data to RP2040 over UART
+* `usb_sniff_to_sd.ino` – Logs USB data to SD card
+* `usb_alarm.ino` – Triggers GPIO pin when a known bad device is detected
+* `usb_descriptor_dump.ino` – Dumps full USB descriptor
+* `hid_keystroke_relay.ino` – Logs keycodes from HID keyboards
+* `usb_class_logger.ino` – Shows the USB class for each device
+* `badusb_detector.ino` – Detects if a device starts typing instantly (BadUSB)
+
+---
+
+## 📑 Devlog
+
+Check out the full build log in [`DEVLOG.md`](./DEVLOG.md).
+Includes day-wise updates, hours spent, firmware progress, screenshots, and submission checklist.
+
+---
+
+## 🖼️ Preview
+
+![Top View](https://hc-cdn.hel1.your-objectstorage.com/s/v3/92b4674ab81d90fcc6c0f7a240fd5c8e7d33c3d9_image.png)
+![Side View](https://hc-cdn.hel1.your-objectstorage.com/s/v3/513496f467b40c6f818115a2d973a3af67951d1e_image.png)
+![Bottom View](https://hc-cdn.hel1.your-objectstorage.com/s/v3/fce8cc3f3c91b013d8dc43dced6fc8b10b9459c3_image.png)
+
+---
+
+## 👤 Made by
+
+[Devaansh Pathak](https://github.com/devaanshpathak)
+GitHub Repo: [github.com/devaanshpathak/duckyfence](https://github.com/devaanshpathak/duckyfence)
+
+---
+
+Want to build one yourself or contribute ideas? Pull requests welcome!

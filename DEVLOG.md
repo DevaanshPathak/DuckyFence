@@ -1,35 +1,104 @@
 # 🛠️ DEVLOG — DuckyFence: RP2040 BadUSB Defense Board
 
-## Hours 1-2
+## ⏱️ Hours 1–2: Planning & Core Schematic
 
-Started the project by outlining its scope: a hardware-based defense board that detects malicious USB devices like HID injectors (BadUSB). Decided on RP2040 as the MCU for its dual-core processing and USB support. Selected the core components including the RP2040, W25Q128JV QSPI flash, AMS1117 regulator, and USB-A/C connectors. Created a rough block diagram and began building the schematic in EasyEDA Pro — focusing first on the power section and RP2040 core wiring. Spent time reviewing the hardware design guide from Raspberry Pi to ensure correct pin usage and decoupling strategies.
-
----
-
-## Hours 2-3
-
-Completed the schematic wiring for the BOOTSEL circuit, RUN pin, UART header, and SWD debug interface. Added decoupling capacitors for each IOVDD, DVDD, USBVDD, and flash VCC. Finalized the AMS1117 section with appropriate input/output bulk capacitors and verified pin mapping. Chose a minimal USB-C footprint (7-pin) for power-only use and ensured CC1/CC2 were pulled down with 5.1 kΩ resistors. Connected USB-A D+/D− lines to the RP2040's native USB pins and added a power-only USB-C interface to serve as UART output to Arduino. Reviewed the schematic against the official RP2040 datasheet and cleaned up net labels.
-
----
-
-## Hours 3-5
-
-Converted the schematic to PCB layout and began placing critical components. Positioned the RP2040 at the center, with the flash and crystal placed tightly nearby for optimal signal integrity. Routed the AMS1117 power input from USB-C and output to all 3.3 V power pins, while placing decoupling capacitors as close to the IC as possible. Routed USB-A D+/D− traces as a differential pair, matching lengths and spacing to avoid impedance mismatches. Filled both top and bottom layers with a solid GND plane. Placed the GPIO breakout header and added test points for key signals like D+/D−, VBUS, and RUN.
+- Outlined goal: detect and log suspicious USB devices like HID injectors (BadUSB).
+- Selected RP2040 (QFN-56), W25Q128JV flash, AMS1117-3.3 regulator, USB-A for input, and USB-C for power + UART.
+- Designed core schematic in EasyEDA Pro:
+  - RP2040 wiring
+  - Flash, crystal, decoupling caps
+  - Power input and voltage regulation
+- Referenced Raspberry Pi’s hardware design guide to ensure proper pin use and grounding strategy.
 
 ---
 
-## Hours 5-6
+## ⏱️ Hours 2–3: I/O, Debug & Final Schematic Touches
 
-Finalized placement of UART and debug headers. Re-routed a few power traces for improved clarity and safety, and added copper fills for cleaner EMI performance. Created a custom back silkscreen layout with board name, author, GitHub URL, and a fun slogan. Tuned the differential USB traces to be length-matched using EasyEDA Pro's trace tuning tools. Ran DRC (Design Rule Check) and resolved spacing, clearance, and unconnected net warnings. Exported the final Gerbers, BOM, and Pick & Place files for manufacturing through JLCPCB.
+- Wired up BOOTSEL circuit using a 1kΩ pull-up + jumper.
+- Added RUN reset button, SWD debug header, UART header, and test points for key pins.
+- Connected USB-A D+/D− to RP2040 (GPIOs 24/25).
+- Pulled down USB-C CC1/CC2 with 5.1k resistors for 5V power-only mode.
+- Broke out GPIO2–GPIO9 via a 1×10 header with 3.3V and GND.
+- Finalized schematic and cleaned net labels before layout.
 
 ---
 
-## Hours 6-8
+## ⏱️ Hours 3–5: PCB Layout & Routing
 
-Compiled a complete external BOM for Amazon parts, including the Arduino Uno, USB Host Shield, USB-to-Serial adapter, and jumper wires. Finalized the README with full feature list, BOMs, use case diagram, and pinout table. Created this devlog summarizing each day’s work. Organized the GitHub repository with schematic PDFs, BOM files, screenshots, and Gerbers.
+- Started layout with RP2040 centered, flash + crystal nearby.
+- Routed all power nets (3.3V, 1.1V, GND) and placed all decoupling/bulk caps close to their ICs.
+- Routed D+ and D− traces from USB-A as a differential pair with length tuning.
+- Added USB-C port for 5V in and UART TX/RX out.
+- Cleaned up ground planes, filled zones, and ran preliminary DRC.
 
 ---
 
-## Hours 8-11
+## ⏱️ Hours 5–6: Finishing Board Design
 
-Worked on firmware development for basic testing and communication. Wrote `blink.c` to verify power and GPIO control, followed by `uart_logger.c` for UART transmission to Arduino. Created `arduino_uart_logger.c` to parse USB descriptor logs from Arduino via serial. Set up `usb_detect.c` using TinyUSB to verify USB device mount states. Added all firmware files, a Pico SDK `CMakeLists.txt`, and usage instructions to the repo. Began Arduino integration by setting up the USB Host Shield sketch to detect and print VID/PID of connected USB devices (BadUSB). Verified serial logs were correctly received on both Arduino Serial Monitor and RP2040 UART.
+- Finalized placement of UART, GPIO, SWD, and BOOTSEL headers.
+- Re-tuned differential pairs, matched lengths, and filled both layers with GND.
+- Added silkscreen labels, logo, GitHub URL, and project name.
+- Ran full DRC, resolved all spacing and clearance issues.
+- Exported Gerbers, BOM, and pick-and-place files for manufacturing via JLCPCB.
+
+---
+
+## ⏱️ Hours 6–7: External BOM & Repo Setup
+
+- Created external BOM (`BOM_AMAZON.xlsx`) with:
+  - Arduino Uno
+  - USB Host Shield
+  - USB-to-Serial adapter
+  - SD card module
+  - Jumper wires and test gear
+- Finalized folder structure:
+  - `/firmware` for RP2040 programs
+  - `/arduino` for USB Host sketches
+  - `/docs` with schematic, BOMs, images
+- Added `README.md`, feature list, architecture diagram, and pinout table.
+
+---
+
+## ⏱️ Hours 7–9: Firmware Programming
+
+- ✅ `blink.c` — power check (GPIO25)
+- ✅ `uart_logger.c` — send logs over UART
+- ✅ `arduino_uart_logger.c` — receive and parse VID/PID over UART
+- ✅ `usb_detect.c` — use TinyUSB to detect PC connection (USB CDC)
+- ✅ `usb_filter.c` — filters known bad VID/PIDs and triggers an alert
+- ✅ `usb_passthrough.c` — forwards UART data to USB (RP2040 as serial bridge)
+- ✅ `gpio_pulse.c` — pulses a GPIO (LED/buzzer) on every detection event
+
+All firmware compiled using the Pico SDK with TinyUSB support. Each was added to the `CMakeLists.txt` for easy building.
+
+---
+
+## ⏱️ Hours 9–11: Arduino USB Host Integration
+
+- ✅ `usb_sniffer.ino` — basic VID/PID logger
+- ✅ `usb_forward_uart.ino` — sends VID/PID over Serial1 to RP2040
+- ✅ `usb_sniffer_plus.ino` — logs HID keypresses via USB Host Shield
+- ✅ `usb_alarm.ino` — alerts when a known BadUSB is plugged in
+- ✅ `usb_descriptor_dump.ino` — full USB descriptor logger
+- ✅ `usb_class_logger.ino` — logs device class (HID, Mass Storage, etc.)
+- ✅ `usb_sniff_to_sd.ino` — saves USB logs to SD card for offline review
+- ✅ `hid_keystroke_relay.ino` — forwards raw keycodes from USB keyboard
+- ✅ `badusb_detector.ino` — alerts if keypresses occur <1s after plug-in
+
+Verified serial logs and alerts via both Arduino Serial Monitor and RP2040 UART receiver.
+
+---
+
+## ✅ Summary
+
+- ⏱️ **Total time**: 11 hours
+- 🧠 **All schematic + layout done manually**
+- 🔌 **Full hardware integration with Arduino & RP2040**
+- 📁 **Includes firmware, host-side Arduino tools, and structured docs**
+- 📦 **Ready for JLCPCB fab with BOM + Pick & Place**
+- 📸 **Project repo includes screenshots, schematic, Gerbers, and more**
+
+---
+
+Want to build your own or extend it?  
+Check out the full repo: [github.com/devaanshpathak/duckyfence](https://github.com/devaanshpathak/duckyfence)
