@@ -34,6 +34,9 @@ add_executable(temp temp.c)
 target_link_libraries(temp pico_stdlib)
 pico_add_extra_outputs(temp)
 
+target_sources(your_target PRIVATE usb_neopixel_status.c)
+target_link_libraries(your_target pico_stdlib hardware_pio)
+
 # -------------------
 # TinyUSB-Based Executables
 # -------------------

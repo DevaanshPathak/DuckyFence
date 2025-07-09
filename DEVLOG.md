@@ -89,14 +89,48 @@ Verified serial logs and alerts via both Arduino Serial Monitor and RP2040 UART 
 
 ---
 
+## ⏱️ Hours 11–15: Python Tools & Logging Scripts
+
+Built a set of Python tools to support logging, visualization, and real-time USB analysis on the host side (PC). These scripts are stored in the `/python` folder and work with the UART output from the RP2040 or the Arduino Uno.
+
+- ✅ `log_serial.py` — logs raw UART output to `usb_log.txt` with timestamps
+- ✅ `vid_pid_parser.py` — parses VID/PID lines from serial and prints detected devices
+- ✅ `alert_on_badusb.py` — compares incoming VID/PID against a known BadUSB list and triggers alert
+- ✅ `usb_log_to_csv.py` — logs all detected devices to `usb_log.csv` for spreadsheet use
+- ✅ `usb_json_logger.py` — logs each USB detection as a newline-delimited JSON object with timestamp + label
+- ✅ `usb_audio_alert.py` — plays a beep or TTS voice when a flagged device is detected
+- ✅ `usb_command_forwarder.py` — simple terminal shell to send commands over USB CDC to the RP2040
+- ✅ `usb_badusb_logger_gui.py` — live GUI log viewer using Tkinter that shows all USB events and alerts in red
+- ✅ `usb_diff_log.py` — compares two CSV logs and shows newly connected or removed USB devices
+- ✅ `usb_vid_pid_lookup.py` — looks up VID/PID in a local `usb.ids` database and prints the vendor/product
+
+All scripts were tested with `pyserial`, and the GUI was built using standard `tkinter`. Alerts use `winsound`, `playsound`, or `pyttsx3` if available.
+
+---
+
+## ⏱️ Hours 15–16: NeoPixel Status Indicator Integration
+
+To improve visual feedback, added support for a single **WS2812 NeoPixel RGB LED** connected to GPIO3 on the RP2040. This LED provides instant USB status:
+
+* 🟡 **Yellow** = No USB device connected
+* 🟢 **Green** = Safe device detected
+* 🔴 **Red** = BadUSB (known malicious VID/PID)
+
+Used a custom `usb_neopixel_status.c` firmware file, driven via a PIO-based NeoPixel driver adapted from the `pico-extras` repo. Integrated the color logic into the USB detection path (`usb_filter.c`) to trigger LED changes in real time. This makes the board usable even without a serial monitor or external logging tools.
+
+Also finalised with `README.md` and `DEVLOG.md`.
+
+---
+
 ## ✅ Summary
 
-- ⏱️ **Total time**: 11 hours
-- 🧠 **All schematic + layout done manually**
-- 🔌 **Full hardware integration with Arduino & RP2040**
-- 📁 **Includes firmware, host-side Arduino tools, and structured docs**
-- 📦 **Ready for JLCPCB fab with BOM + Pick & Place**
-- 📸 **Project repo includes screenshots, schematic, Gerbers, and more**
+- ⏱️ **Total time**: ~16 hours
+- 🧠 Manual schematic, layout, and firmware development
+- 💬 Full UART and USB CDC communication stack
+- 🧰 Python tools for monitoring, alerts, logging, and forensics
+- 🔌 Arduino + USB Host Shield integration
+- 📁 Clean repo with firmware, Arduino, Python, images, BOMs, Gerbers
+- 🚀 Ready for manufacturing and demo usage
 
 ---
 
