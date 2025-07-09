@@ -108,7 +108,7 @@ All scripts were tested with `pyserial`, and the GUI was built using standard `t
 
 ---
 
-## ⏱️ Hours 15–16: NeoPixel Status Indicator Integration
+## ⏱️ Hours 15–17: NeoPixel Status Indicator Integration
 
 To improve visual feedback, added support for a single **WS2812 NeoPixel RGB LED** connected to GPIO3 on the RP2040. This LED provides instant USB status:
 
@@ -124,7 +124,7 @@ Also finalised with `README.md` and `DEVLOG.md`.
 
 ## ✅ Summary
 
-- ⏱️ **Total time**: ~16 hours
+- ⏱️ **Total time**: ~17 hours
 - 🧠 Manual schematic, layout, and firmware development
 - 💬 Full UART and USB CDC communication stack
 - 🧰 Python tools for monitoring, alerts, logging, and forensics
